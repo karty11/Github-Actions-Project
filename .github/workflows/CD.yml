@@ -5,10 +5,12 @@ on:
     workflows: ["CI Pipeline"]
     types:
       - completed
+  push:
+    branches:
+      - main
 
 jobs:
   deploy_to_kubernetes:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: self-hosted
     env:
       IMAGE_TAG: ${{ github.sha }}
@@ -34,14 +36,12 @@ jobs:
           mkdir -p $HOME/.kube
           echo "${{ secrets.EKS_KUBECONFIG }}" > $HOME/.kube/config
 
-#      # Apply ESO Application
-#      - name: Apply ESO ArgoCD Application
-#        run: |
-#          kubectl apply -f helm/eso-app/templates/argocd-application.yaml
-#          kubectl -n argocd wait application/external-secrets --for condition=Synced --timeout=300s
+      - name: Apply ESO ArgoCD Application
+        run: |
+          kubectl apply -f helm/applications/eso-application.yaml
+          kubectl -n argocd wait application/external-secrets --for condition=Synced --timeout=300s
 
-      # Apply BankApp Application
       - name: Apply BankApp ArgoCD Application
         run: |
-          kubectl apply -f helm/bankapp-chart/templates/argocd-application.yaml
+          kubectl apply -f helm/applications/bankapp-application.yaml
           kubectl -n argocd wait application/bankapp --for condition=Synced --timeout=300s
