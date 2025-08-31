@@ -42,10 +42,6 @@ jobs:
           kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
           kubectl rollout status deployment/argocd-server -n argocd --timeout=180s
 
-      - name: Wait for ArgoCD to be Ready
-        run: |
-          kubectl wait --for=condition=Ready pod -l app.kubernetes.io/part-of=argocd -n argocd --timeout=300s
-
       - name: Apply ESO ArgoCD Application
         run: |
           kubectl apply -f helm/applications/eso-application.yaml
