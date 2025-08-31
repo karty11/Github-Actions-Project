@@ -42,6 +42,10 @@ jobs:
           kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
           kubectl rollout status deployment/argocd-server -n argocd --timeout=180s
 
+      - name: Create external-secrets namespace
+        run: |
+          kubectl create namespace external-secrets || true
+
       - name: Apply ESO ArgoCD Application
         run: |
           kubectl apply -f helm/applications/eso-application.yaml
