@@ -39,11 +39,17 @@ jobs:
       # ----------------------------
       # 🟢 IRSA Setup for External Secrets
       # ----------------------------
+      - name: Install Terragrunt
+        run: |
+          curl -L https://github.com/gruntwork-io/terragrunt/releases/download/v0.67.4/terragrunt_linux_amd64 -o terragrunt
+          chmod +x terragrunt
+          sudo mv terragrunt /usr/local/bin/
+
       - name: Deploy External Secrets IRSA (Terraform)
         run: |
           cd infra/modules/external-secrets-irsa
-          terraform init -input=false
-          terraform apply -auto-approve -input=false
+          terragrunt init
+          terragrunt apply --terragrunt-non-interactive -auto-approve
 
       # ----------------------------
       # ArgoCD + External Secrets
