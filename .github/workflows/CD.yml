@@ -41,14 +41,19 @@ jobs:
            kubectl create namespace argocd || true
            kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
            kubectl rollout status deployment/argocd-server -n argocd
-    
+
+      - name: Wait for ArgoCD to be Ready
+        run: |
+         kubectl rollout status deployment/argocd-application-controller -n argocd --timeout=180s
+         kubectl rollout status deployment/argocd-repo-server -n argocd --timeout=180s
+         kubectl rollout status deployment/argocd-server -n argocd --timeout=180s
 
       - name: Apply ESO ArgoCD Application
         run: |
           kubectl apply -f helm/applications/eso-application.yaml
-          kubectl -n argocd wait application/external-secrets --for condition=Synced --timeout=300s
+          kubectl -n argocd wait application/external-secrets --for condition=Synced --timeout=600s
 
       - name: Apply BankApp ArgoCD Application
         run: |
           kubectl apply -f helm/applications/bankapp-application.yaml
-          kubectl -n argocd wait application/bankapp --for condition=Synced --timeout=300s
+          kubectl -n argocd wait application/bankapp --for condition=Synced --timeout=600s
