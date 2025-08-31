@@ -39,6 +39,11 @@ jobs:
       # ----------------------------
       # 🟢 IRSA Setup for External Secrets
       # ----------------------------
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v3
         with:
