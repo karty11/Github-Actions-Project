@@ -39,6 +39,11 @@ jobs:
       # ----------------------------
       # 🟢 IRSA Setup for External Secrets
       # ----------------------------
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.13.1
+
       - name: Install Terragrunt
         run: |
           curl -L https://github.com/gruntwork-io/terragrunt/releases/download/v0.67.4/terragrunt_linux_amd64 -o terragrunt
