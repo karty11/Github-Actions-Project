@@ -36,6 +36,18 @@ jobs:
           mkdir -p $HOME/.kube
           echo "${{ secrets.EKS_KUBECONFIG }}" > $HOME/.kube/config
 
+      # ----------------------------
+      # 🟢 IRSA Setup for External Secrets
+      # ----------------------------
+      - name: Deploy External Secrets IRSA (Terraform)
+        run: |
+          cd infra/modules/external-secrets-irsa
+          terraform init -input=false
+          terraform apply -auto-approve -input=false
+
+      # ----------------------------
+      # ArgoCD + External Secrets
+      # ----------------------------
       - name: Install ArgoCD
         run: |
           kubectl create namespace argocd || true
@@ -52,6 +64,9 @@ jobs:
           kubectl -n argocd wait application/external-secrets --for condition=Synced --timeout=600s || true
           kubectl get applications -n argocd external-secrets -o wide
 
+      # ----------------------------
+      # Deploy Your App
+      # ----------------------------
       - name: Apply BankApp ArgoCD Application
         run: |
           kubectl apply -f helm/applications/bankapp-application.yaml
