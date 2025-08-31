@@ -47,7 +47,7 @@ jobs:
 
       - name: Deploy External Secrets IRSA (Terraform)
         run: |
-          cd infra/modules/external-secrets-irsa
+          cd infra/resources
           terragrunt init
           terragrunt apply --terragrunt-non-interactive -auto-approve
 
