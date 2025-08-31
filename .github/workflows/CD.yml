@@ -64,7 +64,7 @@ jobs:
         run: |
           cd infra/resources
           terragrunt init
-          terragrunt apply --terragrunt-non-interactive -auto-approve
+          terragrunt apply --terragrunt-non-interactive -auto-approve --terragrunt-log-level debug
 
       # ----------------------------
       # ArgoCD + External Secrets
