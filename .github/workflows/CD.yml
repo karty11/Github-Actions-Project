@@ -50,6 +50,11 @@ jobs:
           chmod +x terragrunt
           sudo mv terragrunt /usr/local/bin/
 
+      - name: Check versions
+        run: |
+         terraform -version
+         terragrunt -version    
+
       - name: Deploy External Secrets IRSA (Terraform)
         run: |
           cd infra/resources
