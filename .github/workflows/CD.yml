@@ -34,7 +34,6 @@ jobs:
           mkdir -p $HOME/.kube
           echo "${{ secrets.EKS_KUBECONFIG }}" > $HOME/.kube/config
 
-      # Apply BankApp Application
       - name: Apply BankApp ArgoCD Application
         run: |
           kubectl apply -f helm/bankapp-chart/templates/argocd-application.yaml
