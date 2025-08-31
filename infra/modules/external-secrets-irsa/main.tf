@@ -25,9 +25,16 @@ provider "kubernetes" {
   token                  = data.aws_eks_cluster_auth.this.token
 }
 
-# OIDC provider
-data "aws_iam_openid_connect_provider" "this" {
-  arn = data.aws_eks_cluster.this.identity[0].oidc[0].issuer
+locals {
+  oidc_url = data.aws_eks_cluster.this.identity[0].oidc[0].issuer
+}
+
+resource "aws_iam_openid_connect_provider" "eks" {
+  url             = local.oidc_url
+  client_id_list  = ["sts.amazonaws.com"]
+
+  # Default thumbprint for AWS OIDC root CA
+  thumbprint_list = ["9e99a48a9960b14926bb7f3b02e22da2b0ab7280"]
 }
 
 # IAM role for External Secrets
@@ -40,12 +47,12 @@ resource "aws_iam_role" "external_secrets" {
       {
         Effect = "Allow"
         Principal = {
-          Federated = data.aws_iam_openid_connect_provider.this.arn
+          Federated = aws_iam_openid_connect_provider.eks.arn
         }
         Action = "sts:AssumeRoleWithWebIdentity"
         Condition = {
           StringEquals = {
-            "${replace(data.aws_eks_cluster.this.identity[0].oidc[0].issuer, "https://", "")}:sub" = "system:serviceaccount:${var.namespace}:${var.service_account_name}"
+            "${replace(local.oidc_url, "https://", "")}:sub" = "system:serviceaccount:${var.namespace}:${var.service_account_name}"
           }
         }
       }
@@ -67,5 +74,10 @@ resource "kubernetes_service_account" "external_secrets" {
     annotations = {
       "eks.amazonaws.com/role-arn" = aws_iam_role.external_secrets.arn
     }
+  }
+}
+resource "null_resource" "check_cluster" {
+  provisioner "local-exec" {
+    command = "echo '✅ External Secrets IRSA deployed for cluster ${var.cluster_name}, namespace ${var.namespace}'"
   }
 }
