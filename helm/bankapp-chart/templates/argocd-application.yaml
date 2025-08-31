@@ -1,24 +1,25 @@
-
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: bankapp
+  name: external-secrets
   namespace: argocd
 spec:
   project: default
   source:
-    repoURL: 'https://github.com/karty11/your-repo.git'
-    targetRevision: main
-    path: helm/bankapp-chart
+    repoURL: "https://charts.external-secrets.io"
+    chart: external-secrets
+    targetRevision: 0.9.19  # latest stable version
     helm:
-      parameters:
-        - name: image.repository
-          value: karty11/newbankapp
-        - name: image.tag
-          value: {{ .Values.image.tag | quote }}
+      releaseName: external-secrets
+      values: |
+        serviceAccount:
+          create: true
+          name: external-secrets
+          annotations:
+            eks.amazonaws.com/role-arn: arn:aws:iam::<ACCOUNT_ID>:role/external-secrets-irsa
   destination:
     server: https://kubernetes.default.svc
-    namespace: devproject
+    namespace: external-secrets
   syncPolicy:
     automated:
       selfHeal: true

@@ -17,12 +17,6 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Update AWS CLI
-        run: |
-          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-          unzip awscliv2.zip
-          sudo ./aws/install --update
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -40,29 +34,14 @@ jobs:
           mkdir -p $HOME/.kube
           echo "${{ secrets.EKS_KUBECONFIG }}" > $HOME/.kube/config
 
-      - name: Install Helm
-        uses: azure/setup-helm@v3
-        with:
-          version: v3.13.3
-
-      - name: Install ArgoCD
+      # Apply ESO Application
+      - name: Apply ESO ArgoCD Application
         run: |
-          helm repo add argo https://argoproj.github.io/argo-helm
-          helm repo update
-          helm upgrade --install argocd argo/argo-cd \
-            --namespace argocd \
-            --create-namespace
+          kubectl apply -f helm/eso-app/templates/argocd-application.yaml
+          kubectl -n argocd wait application/external-secrets --for condition=Synced --timeout=300s
 
-      - name: Install External Secrets Operator
-        run: |
-          helm repo add external-secrets https://charts.external-secrets.io
-          helm repo update
-          helm upgrade --install external-secrets external-secrets/external-secrets \
-            --namespace external-secrets \
-            --create-namespace
-
-      - name: Apply ArgoCD Application
+      # Apply BankApp Application
+      - name: Apply BankApp ArgoCD Application
         run: |
           kubectl apply -f helm/bankapp-chart/templates/argocd-application.yaml
-          kubectl -n argocd rollout status deploy/argocd-server
           kubectl -n argocd wait application/bankapp --for condition=Synced --timeout=300s
