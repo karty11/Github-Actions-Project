@@ -12,6 +12,7 @@ jobs:
     runs-on: self-hosted
     env:
       IMAGE_TAG: ${{ github.sha }}
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -44,14 +45,24 @@ jobs:
         with:
           version: v3.13.3
 
-      - name: Create Namespace if Not Exists
+      - name: Install ArgoCD
         run: |
-          kubectl get ns devproject || kubectl create ns devproject
+          helm repo add argo https://argoproj.github.io/argo-helm
+          helm repo update
+          helm upgrade --install argocd argo/argo-cd \
+            --namespace argocd \
+            --create-namespace
 
-      - name: Deploy with Helm
+      - name: Install External Secrets Operator
         run: |
-          helm upgrade --install bankapp ./helm/bankapp-chart \
-            --namespace devproject \
-            --create-namespace \
-            --set image.repository=karty11/newbankapp \
-            --set image.tag=${{ github.sha }}
+          helm repo add external-secrets https://charts.external-secrets.io
+          helm repo update
+          helm upgrade --install external-secrets external-secrets/external-secrets \
+            --namespace external-secrets \
+            --create-namespace
+
+      - name: Apply ArgoCD Application
+        run: |
+          kubectl apply -f helm/bankapp-chart/templates/argocd-application.yaml
+          kubectl -n argocd rollout status deploy/argocd-server
+          kubectl -n argocd wait application/bankapp --for condition=Synced --timeout=300s

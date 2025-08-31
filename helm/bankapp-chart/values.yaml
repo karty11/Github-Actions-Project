@@ -5,8 +5,9 @@ image:
   tag: latest
 
 mysql:
-  rootPassword: "Test@123"
   database: "bankappdb"
+  user: "root"
+  secretName: "mysql-secret"
 
 service:
   type: LoadBalancer

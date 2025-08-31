@@ -2,25 +2,27 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mysql
+  namespace: devproject
 spec:
+  replicas: 1
   selector:
     matchLabels:
       app: mysql
-  strategy:
-    type: Recreate
   template:
     metadata:
       labels:
         app: mysql
     spec:
       containers:
-        - image: mysql:8
-          name: mysql
+        - name: mysql
+          image: mysql:8.0
           env:
             - name: MYSQL_ROOT_PASSWORD
-              value: {{ .Values.mysql.rootPassword | quote }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mysql.secretName }}
+                  key: MYSQL_ROOT_PASSWORD
             - name: MYSQL_DATABASE
-              value: {{ .Values.mysql.database | quote }}
+              value: {{ .Values.mysql.database }}
           ports:
             - containerPort: 3306
-              name: mysql
