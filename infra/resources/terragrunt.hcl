@@ -1,5 +1,5 @@
 terraform {
-  source = "../modules/eks-external-secrets-irsa"
+  source = "../modules/external-secrets-irsa"
 }
 
 inputs = {
