@@ -67,22 +67,27 @@ resource "aws_iam_role_policy_attachment" "external_secrets" {
 }
 
 # Create namespace for External Secrets
- data "kubernetes_namespace" "external_secrets" {
-   metadata {
-     name = var.namespace
+resource "kubernetes_namespace" "external_secrets" {
+  metadata {
+    name = var.namespace
   }
- }
 
-# Annotate the service account with IRSA role
- resource "kubernetes_service_account" "external_secrets" {
-   metadata {
-     name      = var.service_account_name
-     namespace = data.kubernetes_namespace.external_secrets.metadata[0].name
-     annotations = {
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+# ServiceAccount annotated with IRSA role
+resource "kubernetes_service_account" "external_secrets" {
+  metadata {
+    name      = var.service_account_name
+    namespace = kubernetes_namespace.external_secrets.metadata[0].name
+
+    annotations = {
       "eks.amazonaws.com/role-arn" = aws_iam_role.external_secrets.arn
     }
-   }
- }
+  }
+}
 
 
 resource "null_resource" "check_cluster" {
