@@ -4,7 +4,7 @@ metadata:
   name: external-secrets
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "0"   # 🚀 install ESO first
+    argocd.argoproj.io/sync-wave: "0"  
 spec:
   project: default
   destination:
@@ -12,12 +12,15 @@ spec:
     server: https://kubernetes.default.svc
   source:
     repoURL: https://charts.external-secrets.io
-    chart: external-secrets            # 👈 REQUIRED
-    targetRevision: 0.9.13             # latest stable
+    chart: external-secrets
+    targetRevision: 0.9.13   
     helm:
+      parameters:
+        - name: installCRDs      
+          value: "true"
       values: |
         serviceAccount:
-          create: false
+          create: false           
           name: external-secrets
   syncPolicy:
     automated:
@@ -25,6 +28,7 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+
 
 
 
