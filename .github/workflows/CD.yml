@@ -8,7 +8,6 @@ on:
   push:
     branches:
       - main
-
 jobs:
   deploy_to_kubernetes:
     runs-on: self-hosted
