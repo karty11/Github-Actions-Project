@@ -68,7 +68,7 @@ resource "aws_iam_role_policy_attachment" "external_secrets" {
 
 # Create namespace for External Secrets
 resource "kubernetes_namespace" "external_secrets" {
-  metadata {
+  metadata = {
     name = var.namespace
   }
 
@@ -88,7 +88,6 @@ resource "kubernetes_service_account" "external_secrets" {
     }
   }
 }
-
 
 resource "null_resource" "check_cluster" {
   provisioner "local-exec" {
