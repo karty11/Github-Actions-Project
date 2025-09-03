@@ -59,6 +59,10 @@ jobs:
          terraform -version
          terragrunt -version    
 
+      - name: Create external-secrets namespace
+        run: |
+          kubectl create namespace external-secrets || true
+
       - name: Deploy External Secrets IRSA (Terraform)
         run: |
           cd infra/resources
