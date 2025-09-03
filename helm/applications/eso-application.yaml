@@ -10,8 +10,7 @@ spec:
     server: https://kubernetes.default.svc
   source:
     repoURL: https://charts.external-secrets.io
-    targetRevision: 0.9.x   # pick the latest release
-    chart: external-secrets
+    targetRevision: 0.9.13  # latest stable
     helm:
       values: |
         serviceAccount:
@@ -21,6 +20,8 @@ spec:
     automated:
       prune: true
       selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
 
 
 
