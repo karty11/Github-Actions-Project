@@ -1,8 +1,10 @@
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: bankapp
-  namespace: devproject
+  labels:
+    app: bankapp
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
@@ -16,17 +18,69 @@ spec:
       containers:
         - name: bankapp
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          env:
-            - name: DB_HOST
-              value: mysql
-            - name: DB_USER
-              value: {{ .Values.mysql.user }}
-            - name: DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.mysql.secretName }}
-                  key: MYSQL_ROOT_PASSWORD
-            - name: DB_NAME
-              value: {{ .Values.mysql.database }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - containerPort: 8080
+          env:
+            - name: MYSQL_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mysqlSecret.name }}
+                  key: {{ .Values.mysqlSecret.usernameKey }}
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mysqlSecret.name }}
+                  key: {{ .Values.mysqlSecret.passwordKey }}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: bankapp
+#   namespace: devproject
+# spec:
+#   replicas: {{ .Values.replicaCount }}
+#   selector:
+#     matchLabels:
+#       app: bankapp
+#   template:
+#     metadata:
+#       labels:
+#         app: bankapp
+#     spec:
+#       containers:
+#         - name: bankapp
+#           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+#           env:
+#             - name: DB_HOST
+#               value: mysql
+#             - name: DB_USER
+#               value: {{ .Values.mysql.user }}
+#             - name: DB_PASSWORD
+#               valueFrom:
+#                 secretKeyRef:
+#                   name: {{ .Values.mysql.secretName }}
+#                   key: MYSQL_ROOT_PASSWORD
+#             - name: DB_NAME
+#               value: {{ .Values.mysql.database }}
+#           ports:
+#             - containerPort: 8080
