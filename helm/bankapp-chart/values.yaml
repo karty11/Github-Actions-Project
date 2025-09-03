@@ -3,14 +3,38 @@ replicaCount: 1
 image:
   repository: karty11/newbankapp
   tag: latest
-
-mysql:
-  database: "bankappdb"
-  user: "root"
-  secretName: "mysql-secret"
+  pullPolicy: IfNotPresent
 
 service:
-  type: LoadBalancer
-  port: 80
+  type: ClusterIP
+  port: 8080
 
-resources: {}
+mysqlSecret:
+  name: mysql-secret
+  usernameKey: username
+  passwordKey: password
+
+
+
+
+
+
+
+
+
+# replicaCount: 1
+
+# image:
+#   repository: karty11/newbankapp
+#   tag: latest
+
+# mysql:
+#   database: "bankappdb"
+#   user: "root"
+#   secretName: "mysql-secret"
+
+# service:
+#   type: LoadBalancer
+#   port: 80
+
+# resources: {}
