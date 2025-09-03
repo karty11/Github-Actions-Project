@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root-app
+  namespace: argocd
+spec:
+  project: default
+  destination:
+    namespace: argocd
+    server: https://kubernetes.default.svc
+  source:
+    repoURL: https://github.com/karty11/Github-Actions-Project.git
+    targetRevision: main
+    path: helm/applications       # 👈 points to all your app manifests
+    directory:
+      recurse: true               # 👈 picks up all apps inside this folder
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
