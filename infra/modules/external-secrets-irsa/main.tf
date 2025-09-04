@@ -30,8 +30,8 @@ locals {
 }
 
 resource "aws_iam_openid_connect_provider" "eks" {
-  url             = local.oidc_url
-  client_id_list  = ["sts.amazonaws.com"]
+  url            = local.oidc_url
+  client_id_list = ["sts.amazonaws.com"]
 
   # Default thumbprint for AWS OIDC root CA
   thumbprint_list = ["9e99a48a9960b14926bb7f3b02e22da2b0ab7280"]
@@ -52,7 +52,8 @@ resource "aws_iam_role" "external_secrets" {
         Action = "sts:AssumeRoleWithWebIdentity"
         Condition = {
           StringEquals = {
-            "${replace(local.oidc_url, "https://", "")}:sub" = "system:serviceaccount:${var.namespace}:${var.service_account_name}"
+            (format("%s:sub", replace(local.oidc_url, "https://", ""))) = "system:serviceaccount:${var.namespace}:${var.service_account_name}"
+            (format("%s:aud", replace(local.oidc_url, "https://", ""))) = "sts.amazonaws.com"
           }
         }
       }
@@ -87,7 +88,6 @@ resource "kubernetes_service_account" "external_secrets" {
     }
   }
 }
-
 
 resource "null_resource" "check_cluster" {
   provisioner "local-exec" {
