@@ -65,8 +65,8 @@ resource "aws_iam_role" "external_secrets" {
     Action    = "sts:AssumeRoleWithWebIdentity"
     Condition = {
       StringEquals = {
-        "${local.oidc_issuer_host}:sub" = "system:serviceaccount:${var.namespace}:${var.service_account_name}"
-        "${local.oidc_issuer_host}:aud" = "sts.amazonaws.com"
+        "${replace(data.aws_eks_cluster.eks.identity[0].oidc[0].issuer, "https://", "")}:sub" = "system:serviceaccount:${var.namespace}:${var.service_account_name}"
+        "${replace(data.aws_eks_cluster.eks.identity[0].oidc[0].issuer, "https://", "")}:aud" = "sts.amazonaws.com"
       }
     }
   }]
