@@ -67,13 +67,23 @@ jobs:
       # - name: Create external-secrets namespace
       #   run: |
       #     kubectl create namespace external-secrets || true
-      - name: Patch orphaned ServiceAccount for Helm ownership
+      - name: Patch orphaned resources for Helm ownership
         run: |
-          kubectl annotate serviceaccount external-secrets-cert-controller \
-            -n external-secrets \
-            meta.helm.sh/release-name=external-secrets \
-            meta.helm.sh/release-namespace=external-secrets \
-            --overwrite || echo "ServiceAccount not found or already patched"
+          for sa in external-secrets-cert-controller external-secrets-webhook; do
+            kubectl annotate serviceaccount $sa \
+              -n external-secrets \
+              meta.helm.sh/release-name=external-secrets \
+              meta.helm.sh/release-namespace=external-secrets \
+              --overwrite || echo "ServiceAccount $sa not found or already patched"
+          done
+          
+      # - name: Patch orphaned ServiceAccount for Helm ownership
+      #   run: |
+      #     kubectl annotate serviceaccount external-secrets-cert-controller \
+      #       -n external-secrets \
+      #       meta.helm.sh/release-name=external-secrets \
+      #       meta.helm.sh/release-namespace=external-secrets \
+      #       --overwrite || echo "ServiceAccount not found or already patched"
 
       - name: Deploy External Secrets IRSA (Terraform)
         run: |
@@ -93,6 +103,7 @@ jobs:
             --namespace external-secrets \
             --create-namespace \
             --values helm/bankapp-chart/external-secrets-values.yaml
+            --set installCRDs=true
 
       - name: Deploy BankApp Chart
         run: |
