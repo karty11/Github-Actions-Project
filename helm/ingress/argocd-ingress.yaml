@@ -10,12 +10,8 @@ metadata:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
 spec:
   ingressClassName: nginx
-  tls:
-    - hosts:
-        - argocd.karty.dev  # Replace with your domain
-      secretName: argocd-server-tls
   rules:
-    - host: argocd.karty.dev
+    - host: argocd.local
       http:
         paths:
           - path: /
