@@ -44,10 +44,12 @@ locals {
 }
 
 # ---------- IAM role for External Secrets (IRSA) ----------
-resource "aws_iam_role" "external_secrets" {
-  name = "external-secrets-iam-role"
+locals {
+  oidc_issuer_host = replace(data.aws_eks_cluster.eks.identity[0].oidc[0].issuer, "https://", "")
+  oidc_sub_key     = "${local.oidc_issuer_host}:sub"
+  oidc_aud_key     = "${local.oidc_issuer_host}:aud"
 
-  assume_role_policy = jsonencode({
+  assume_role_policy_doc = {
     Version = "2012-10-17"
     Statement = [{
       Effect    = "Allow"
@@ -57,12 +59,17 @@ resource "aws_iam_role" "external_secrets" {
       Action    = "sts:AssumeRoleWithWebIdentity"
       Condition = {
         StringEquals = {
-          local.oidc_sub_key = "system:serviceaccount:${var.namespace}:${var.service_account_name}"
-          local.oidc_aud_key = "sts.amazonaws.com"
+          "${local.oidc_sub_key}" = "system:serviceaccount:${var.namespace}:${var.service_account_name}"
+          "${local.oidc_aud_key}" = "sts.amazonaws.com"
         }
       }
     }]
-  })
+  }
+}
+
+resource "aws_iam_role" "external_secrets" {
+  name               = "external-secrets-iam-role"
+  assume_role_policy = jsonencode(local.assume_role_policy_doc)
 }
 
 # Attach Secrets Manager policy
