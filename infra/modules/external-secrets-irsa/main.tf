@@ -55,17 +55,22 @@ resource "aws_iam_openid_connect_provider" "eks" {
 resource "aws_iam_role" "external_secrets" {
   name = "external-secrets-iam-role"
 
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect    = "Allow"
-      Principal = { Federated = aws_iam_openid_connect_provider.eks.arn }
-      Action    = "sts:AssumeRoleWithWebIdentity"
-      Condition = {
-        StringEquals = local.string_equals
+ assume_role_policy = jsonencode({
+  Version = "2012-10-17"
+  Statement = [{
+    Effect    = "Allow"
+    Principal = {
+      Federated = aws_iam_openid_connect_provider.eks.arn
+    }
+    Action    = "sts:AssumeRoleWithWebIdentity"
+    Condition = {
+      StringEquals = {
+        "${local.oidc_issuer_host}:sub" = "system:serviceaccount:${var.namespace}:${var.service_account_name}"
+        "${local.oidc_issuer_host}:aud" = "sts.amazonaws.com"
       }
-    }]
-  })
+    }
+  }]
+})
 }
 
 # Attach Secrets Manager policy
