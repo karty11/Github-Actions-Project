@@ -79,7 +79,7 @@ jobs:
 
           helm upgrade --install external-secrets external-secrets/external-secrets \
             --namespace external-secrets --create-namespace \
-            --values helm/bankapp-chart/values.yaml \
+            --values helm/bankapp-chart/external-secrets-values.yaml \
             --set installCRDs=true
       # ----------------------------
       # ArgoCD + External Secrets
