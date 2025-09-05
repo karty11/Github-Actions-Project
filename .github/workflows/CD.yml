@@ -68,11 +68,11 @@ jobs:
       #   run: |
       #     kubectl create namespace external-secrets || true
 
-      # - name: Deploy External Secrets IRSA (Terraform)
-      #   run: |
-      #     cd infra/resources
-      #     terragrunt init
-      #     terragrunt apply --terragrunt-non-interactive -auto-approve --terragrunt-log-level debug
+      - name: Deploy External Secrets IRSA (Terraform)
+        run: |
+          cd infra/resources
+          terragrunt init
+          terragrunt apply --terragrunt-non-interactive -auto-approve --terragrunt-log-level debug
 
       # ----------------------------
       # ArgoCD + External Secrets
@@ -100,11 +100,11 @@ jobs:
       - name: Apply ArgoCD Ingress
         run: kubectl apply -f helm/ingress/argocd-ingress.yaml   
 
-      # - name: Apply ESO ArgoCD Application
-      #   run: |
-      #     kubectl apply -f helm/applications/eso-application.yaml
-      #     kubectl -n argocd wait application/external-secrets --for condition=Synced --timeout=600s || true
-      #     kubectl get applications -n argocd external-secrets -o wide
+      - name: Apply ESO ArgoCD Application
+        run: |
+          kubectl apply -f helm/applications/eso-application.yaml
+          kubectl -n argocd wait application/external-secrets --for condition=Synced --timeout=600s || true
+          kubectl get applications -n argocd external-secrets -o wide
 
       # ----------------------------
       # Deploy Your App
