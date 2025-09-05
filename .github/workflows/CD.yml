@@ -82,6 +82,17 @@ jobs:
           kubectl create namespace argocd || true
           kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
           kubectl rollout status deployment/argocd-server -n argocd --timeout=180s
+     
+      - name: Get ArgoCD LoadBalancer IP
+        id: get_ip
+        run: |
+         LB_IP=$(kubectl get svc argocd-server -n argocd -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+         echo "ARGOCD_LB_IP=$LB_IP" >> $GITHUB_ENV  
+      - name: Apply TLS Secret
+        run: kubectl apply -f infra/resources/argocd-tls-secret.yaml
+
+      - name: Apply ArgoCD Ingress
+        run: kubectl apply -f helm/ingress/argocd-ingress.yaml   
 
       - name: Apply ESO ArgoCD Application
         run: |
