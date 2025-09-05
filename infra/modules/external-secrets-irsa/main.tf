@@ -11,12 +11,18 @@ terraform {
   }
 }
 
-data "aws_eks_cluster" "this" {
+data "aws_eks_cluster" "eks" {
   name = var.cluster_name
 }
 
 data "aws_eks_cluster_auth" "this" {
   name = var.cluster_name
+}
+
+locals {
+  oidc_issuer_host = replace(data.aws_eks_cluster.eks.identity[0].oidc[0].issuer, "https://", "")
+  oidc_sub_key     = "${local.oidc_issuer_host}:sub"
+  oidc_aud_key     = "${local.oidc_issuer_host}:aud"
 }
 
 provider "kubernetes" {
@@ -39,25 +45,23 @@ resource "aws_iam_openid_connect_provider" "eks" {
 
 # IAM role for External Secrets
 resource "aws_iam_role" "external_secrets" {
-  name = "eks-external-secrets-role"
- assume_role_policy = jsonencode({
-  Version = "2012-10-17"
-  Statement = [
-    {
-      Effect = "Allow"
-      Principal = {
-        Federated = aws_iam_openid_connect_provider.eks.arn
-      }
-      Action = "sts:AssumeRoleWithWebIdentity"
+  name = "external-secrets-iam-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect    = "Allow"
+      Principal = { Federated = aws_iam_openid_connect_provider.oidc.arn }
+      Action    = "sts:AssumeRoleWithWebIdentity"
       Condition = {
         StringEquals = {
+          # keys are computed from locals
           "${local.oidc_sub_key}" = "system:serviceaccount:${var.namespace}:${var.service_account_name}"
           "${local.oidc_aud_key}" = "sts.amazonaws.com"
         }
       }
-    }
-  ]
-})
+    }]
+  })
 }
 
 # Attach Secrets Manager policy
