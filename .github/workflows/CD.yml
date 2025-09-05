@@ -89,7 +89,6 @@ jobs:
          LB_IP=$(kubectl get svc argocd-server -n argocd -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
          echo "ARGOCD_LB_IP=$LB_IP" >> $GITHUB_ENV  
 
-
       - name: Apply ArgoCD Ingress
         run: kubectl apply -f helm/ingress/argocd-ingress.yaml   
 
