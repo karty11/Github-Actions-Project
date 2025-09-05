@@ -37,26 +37,32 @@ resource "aws_iam_openid_connect_provider" "eks" {
   thumbprint_list = ["9e99a48a9960b14926bb7f3b02e22da2b0ab7280"]
 }
 
+locals {
+  oidc_issuer_host = replace(data.aws_eks_cluster.eks.identity[0].oidc[0].issuer, "https://", "")
+  oidc_sub_key     = "${local.oidc_issuer_host}:sub"
+  oidc_aud_key     = "${local.oidc_issuer_host}:aud"
+}
+
 # ---------- IAM role for External Secrets (IRSA) ----------
 resource "aws_iam_role" "external_secrets" {
   name = "external-secrets-iam-role"
 
- assume_role_policy = jsonencode({
-  Version = "2012-10-17"
-  Statement = [{
-    Effect    = "Allow"
-    Principal = {
-      Federated = aws_iam_openid_connect_provider.eks.arn
-    }
-    Action    = "sts:AssumeRoleWithWebIdentity"
-    Condition = {
-      StringEquals = {
-        "${replace(data.aws_eks_cluster.eks.identity[0].oidc[0].issuer, "https://", "")}:sub" = "system:serviceaccount:${var.namespace}:${var.service_account_name}"
-        "${replace(data.aws_eks_cluster.eks.identity[0].oidc[0].issuer, "https://", "")}:aud" = "sts.amazonaws.com"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect    = "Allow"
+      Principal = {
+        Federated = aws_iam_openid_connect_provider.eks.arn
       }
-    }
-  }]
-})
+      Action    = "sts:AssumeRoleWithWebIdentity"
+      Condition = {
+        StringEquals = {
+          local.oidc_sub_key = "system:serviceaccount:${var.namespace}:${var.service_account_name}"
+          local.oidc_aud_key = "sts.amazonaws.com"
+        }
+      }
+    }]
+  })
 }
 
 # Attach Secrets Manager policy
