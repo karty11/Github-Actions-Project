@@ -67,6 +67,13 @@ jobs:
       # - name: Create external-secrets namespace
       #   run: |
       #     kubectl create namespace external-secrets || true
+      - name: Patch orphaned ServiceAccount for Helm ownership
+        run: |
+          kubectl annotate serviceaccount external-secrets-cert-controller \
+            -n external-secrets \
+            meta.helm.sh/release-name=external-secrets \
+            meta.helm.sh/release-namespace=external-secrets \
+            --overwrite || echo "ServiceAccount not found or already patched"
 
       - name: Deploy External Secrets IRSA (Terraform)
         run: |
