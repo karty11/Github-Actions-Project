@@ -11,30 +11,38 @@ terraform {
   }
 }
 
+# ---------- Data sources ----------
 data "aws_eks_cluster" "eks" {
   name = var.cluster_name
 }
 
-data "aws_eks_cluster_auth" "this" {
+data "aws_eks_cluster_auth" "eks_auth" {
   name = var.cluster_name
 }
 
+# ---------- Locals ----------
 locals {
-  oidc_issuer_host = replace(data.aws_eks_cluster.eks.identity[0].oidc[0].issuer, "https://", "")
+  # issuer URL and host used to build condition keys
+  oidc_url         = data.aws_eks_cluster.eks.identity[0].oidc[0].issuer
+  oidc_issuer_host = replace(local.oidc_url, "https://", "")
   oidc_sub_key     = "${local.oidc_issuer_host}:sub"
   oidc_aud_key     = "${local.oidc_issuer_host}:aud"
+
+  # build the StringEquals map with computed keys (avoids interpolation-in-keys issues)
+  string_equals = {
+    (local.oidc_sub_key) = "system:serviceaccount:${var.namespace}:${var.service_account_name}"
+    (local.oidc_aud_key) = "sts.amazonaws.com"
+  }
 }
 
+# ---------- Providers ----------
 provider "kubernetes" {
-  host                   = data.aws_eks_cluster.this.endpoint
-  cluster_ca_certificate = base64decode(data.aws_eks_cluster.this.certificate_authority[0].data)
-  token                  = data.aws_eks_cluster_auth.this.token
+  host                   = data.aws_eks_cluster.eks.endpoint
+  cluster_ca_certificate = base64decode(data.aws_eks_cluster.eks.certificate_authority[0].data)
+  token                  = data.aws_eks_cluster_auth.eks_auth.token
 }
 
-locals {
-  oidc_url = data.aws_eks_cluster.this.identity[0].oidc[0].issuer
-}
-
+# ---------- OIDC provider ----------
 resource "aws_iam_openid_connect_provider" "eks" {
   url            = local.oidc_url
   client_id_list = ["sts.amazonaws.com"]
@@ -43,7 +51,7 @@ resource "aws_iam_openid_connect_provider" "eks" {
   thumbprint_list = ["9e99a48a9960b14926bb7f3b02e22da2b0ab7280"]
 }
 
-# IAM role for External Secrets
+# ---------- IAM role for External Secrets (IRSA) ----------
 resource "aws_iam_role" "external_secrets" {
   name = "external-secrets-iam-role"
 
@@ -51,14 +59,10 @@ resource "aws_iam_role" "external_secrets" {
     Version = "2012-10-17"
     Statement = [{
       Effect    = "Allow"
-      Principal = { Federated = aws_iam_openid_connect_provider.oidc.arn }
+      Principal = { Federated = aws_iam_openid_connect_provider.eks.arn }
       Action    = "sts:AssumeRoleWithWebIdentity"
       Condition = {
-        StringEquals = {
-          # keys are computed from locals
-          "${local.oidc_sub_key}" = "system:serviceaccount:${var.namespace}:${var.service_account_name}"
-          "${local.oidc_aud_key}" = "sts.amazonaws.com"
-        }
+        StringEquals = local.string_equals
       }
     }]
   })
