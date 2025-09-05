@@ -26,6 +26,10 @@ configs:
   rbac:
     policy.default: role:readonly
 
+serviceAccount:
+  create: true
+  name: external-secrets    
+
 
 
 
