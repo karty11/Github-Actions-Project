@@ -29,6 +29,9 @@ provider "kubernetes" {
 }
 
 # ---------- OIDC provider ----------
+locals {
+  oidc_url = try(data.aws_eks_cluster.eks.identity[0].oidc[0].issuer, "")
+}
 resource "aws_iam_openid_connect_provider" "eks" {
   url            = local.oidc_url
   client_id_list = ["sts.amazonaws.com"]
