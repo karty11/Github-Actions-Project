@@ -74,13 +74,25 @@ jobs:
           terragrunt init
           terragrunt apply --terragrunt-non-interactive -auto-approve --terragrunt-log-level debug
           
-          helm repo add external-secrets https://charts.external-secrets.io
-          helm repo update
+      - name: Add Helm repositories
+        run: |
+         helm repo add external-secrets https://charts.external-secrets.io
+         helm repo add argo https://argoproj.github.io/argo-helm
+         helm repo update
 
+      - name: Deploy External Secrets
+        run: |
           helm upgrade --install external-secrets external-secrets/external-secrets \
-            --namespace external-secrets --create-namespace \
-            --values helm/bankapp-chart/external-secrets-values.yaml \
-            --set installCRDs=true
+            --namespace external-secrets \
+            --create-namespace \
+            --values helm/bankapp-chart/external-secrets-values.yaml
+
+      - name: Deploy BankApp Chart
+        run: |
+          helm upgrade --install bankapp helm/bankapp-chart \
+          --namespace bankapp \
+          --create-namespace \
+          --values helm/bankapp-chart/values.yaml
       # ----------------------------
       # ArgoCD + External Secrets
       # ----------------------------
@@ -91,7 +103,7 @@ jobs:
           helm repo update
           helm upgrade --install argocd argo/argo-cd \
            --namespace argocd --create-namespace \
-           --values helm/bankapp-chart/values.yaml
+           --values helm/bankapp-chart/argocd-values.yaml
       # - name: Install ArgoCD
       #   run: |
       #     kubectl create namespace argocd || true
