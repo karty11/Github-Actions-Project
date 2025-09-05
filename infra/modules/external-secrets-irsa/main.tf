@@ -20,20 +20,6 @@ data "aws_eks_cluster_auth" "eks_auth" {
   name = var.cluster_name
 }
 
-# ---------- Locals ----------
-locals {
-  # issuer URL and host used to build condition keys
-  oidc_url         = data.aws_eks_cluster.eks.identity[0].oidc[0].issuer
-  oidc_issuer_host = replace(local.oidc_url, "https://", "")
-  oidc_sub_key     = "${local.oidc_issuer_host}:sub"
-  oidc_aud_key     = "${local.oidc_issuer_host}:aud"
-
-  # build the StringEquals map with computed keys (avoids interpolation-in-keys issues)
-  string_equals = {
-    (local.oidc_sub_key) = "system:serviceaccount:${var.namespace}:${var.service_account_name}"
-    (local.oidc_aud_key) = "sts.amazonaws.com"
-  }
-}
 
 # ---------- Providers ----------
 provider "kubernetes" {
