@@ -84,7 +84,7 @@ jobs:
           helm repo update
           helm upgrade --install argocd argo/argo-cd \
            --namespace argocd --create-namespace \
-           --values ./values.yaml     
+           --values helm/bankapp-chart/values.yaml
       # - name: Install ArgoCD
       #   run: |
       #     kubectl create namespace argocd || true
