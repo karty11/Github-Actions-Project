@@ -68,20 +68,28 @@ jobs:
       #   run: |
       #     kubectl create namespace external-secrets || true
 
-      - name: Deploy External Secrets IRSA (Terraform)
-        run: |
-          cd infra/resources
-          terragrunt init
-          terragrunt apply --terragrunt-non-interactive -auto-approve --terragrunt-log-level debug
+      # - name: Deploy External Secrets IRSA (Terraform)
+      #   run: |
+      #     cd infra/resources
+      #     terragrunt init
+      #     terragrunt apply --terragrunt-non-interactive -auto-approve --terragrunt-log-level debug
 
       # ----------------------------
       # ArgoCD + External Secrets
       # ----------------------------
-      - name: Install ArgoCD
+
+      - name: Install Argo CD via Helm
         run: |
-          kubectl create namespace argocd || true
-          kubectl apply -n argocd -f https://github.com/karty11/Kube/blob/main/Project_EKS/Argocd/argocdserver.yaml
-          kubectl rollout status deployment/argocd-server -n argocd --timeout=180s
+          helm repo add argo https://argoproj.github.io/argo-helm
+          helm repo update
+          helm upgrade --install argocd argo/argo-cd \
+           --namespace argocd --create-namespace \
+           --values ./values.yaml     
+      # - name: Install ArgoCD
+      #   run: |
+      #     kubectl create namespace argocd || true
+      #     kubectl apply -n argocd -f https://github.com/karty11/Kube/blob/main/Project_EKS/Argocd/argocdserver.yaml
+      #     kubectl rollout status deployment/argocd-server -n argocd --timeout=180s
      
       # - name: Get ArgoCD LoadBalancer IP
       #   id: get_ip
