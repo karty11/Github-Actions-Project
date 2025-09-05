@@ -1,9 +1,9 @@
-output "external_secrets_role_arn" {
-  description = "IAM role ARN assigned to the external-secrets service account"
-  value       = aws_iam_role.external_secrets.arn
+output "external_secrets_irsa_role_arn" {
+  description = "IAM Role ARN for External Secrets Operator"
+  value       = aws_iam_role.external_secrets_irsa.arn
 }
 
-output "external_secrets_service_account" {
-  description = "Name of the Kubernetes service account for external-secrets"
-  value       = kubernetes_service_account.external_secrets.metadata[0].name
+output "oidc_provider_arn" {
+  description = "OIDC provider ARN for EKS"
+  value       = aws_iam_openid_connect_provider.eks.arn
 }
