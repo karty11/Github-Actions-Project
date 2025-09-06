@@ -23,6 +23,6 @@ spec:
                   name: {{ .Values.mysqlSecret.name }}
                   key: {{ .Values.mysqlSecret.passwordKey }}
             - name: MYSQL_DATABASE
-              value: {{ .Values.mysql.database }}
+              value: {{ .Values.mysqlSecret.database }}
           ports:
             - containerPort: 3306
