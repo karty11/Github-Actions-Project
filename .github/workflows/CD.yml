@@ -113,7 +113,6 @@ jobs:
 
       - name: Deploy BankApp Chart
         run: |
-          kubectl create namespace devproject || true
           helm upgrade --install bankapp helm/bankapp-chart \
           --namespace bankapp \
           --create-namespace \
