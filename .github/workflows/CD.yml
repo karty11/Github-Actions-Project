@@ -95,7 +95,7 @@ jobs:
         run: |
          helm repo add external-secrets https://charts.external-secrets.io
          helm repo update
-         helm repo add argo https://argoproj.github.io/argo-helm
+         # helm repo add argo https://argoproj.github.io/argo-helm
         
          
 
@@ -104,7 +104,7 @@ jobs:
           helm upgrade --install external-secrets external-secrets/external-secrets \
             --namespace external-secrets \
             --create-namespace \
-            --values helm/bankapp-chart/external-secrets-values.yaml
+            --values helm/bankapp-chart/external-secrets-values.yaml \
             --set installCRDs=true
 
       - name: Deploy BankApp Chart
@@ -113,6 +113,7 @@ jobs:
           --namespace bankapp \
           --create-namespace \
           --values helm/bankapp-chart/values.yaml
+          --wait --timeout 300s
           kubectl apply -f helm/manifests/secretstore.yaml
           kubectl apply -f helm/manifests/secrets/bankapp/externalsecret-mysql.yaml
           
