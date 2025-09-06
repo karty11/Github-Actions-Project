@@ -4,7 +4,7 @@ metadata:
   name: mysql
   namespace: devproject
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicaCount | default 1 }}
   selector:
     matchLabels:
       app: mysql
@@ -20,9 +20,47 @@ spec:
             - name: MYSQL_ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.mysql.name }}
-                  key: {{ .Values.mysql.passwordKey }}
+                  name: {{ required "mysql.name is required" .Values.mysql.name | quote }}
+                  key: {{ default "password" .Values.mysql.passwordKey | quote }}
             - name: MYSQL_DATABASE
-              value: {{ default "bankdb" .Values.mysql.database }}
+              value: {{ default "bankdb" .Values.mysql.database | quote }}
           ports:
             - containerPort: 3306
+
+
+
+
+
+
+
+
+
+
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: mysql
+#   namespace: devproject
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: mysql
+#   template:
+#     metadata:
+#       labels:
+#         app: mysql
+#     spec:
+#       containers:
+#         - name: mysql
+#           image: mysql:8.0
+#           env:
+#             - name: MYSQL_ROOT_PASSWORD
+#               valueFrom:
+#                 secretKeyRef:
+#                   name: {{ .Values.mysql.name }}
+#                   key: {{ .Values.mysql.passwordKey }}
+#             - name: MYSQL_DATABASE
+#               value: {{ default "bankdb" .Values.mysql.database }}
+#           ports:
+#             - containerPort: 3306
