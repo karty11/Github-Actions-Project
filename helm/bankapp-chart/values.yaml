@@ -13,6 +13,7 @@ mysqlSecret:
   name: mysql-secret
   usernameKey: username
   passwordKey: password
+  database: bankdb
 
 
 
