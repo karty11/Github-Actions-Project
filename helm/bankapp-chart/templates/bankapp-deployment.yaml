@@ -25,13 +25,13 @@ spec:
             - name: MYSQL_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.mysqlSecret.name }}
-                  key: {{ .Values.mysqlSecret.usernameKey }}
+                  name: {{ .Values.mysql.name }}
+                  key: {{ .Values.mysql.usernameKey }}
             - name: MYSQL_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.mysqlSecret.name }}
-                  key: {{ .Values.mysqlSecret.passwordKey }}
+                  name: {{ .Values.mysql.name }}
+                  key: {{ .Values.mysql.passwordKey }}
 
 
 
