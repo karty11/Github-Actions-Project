@@ -113,9 +113,15 @@ jobs:
 
       - name: Deploy BankApp Chart
         run: |
-          helm upgrade --install bankapp helm/bankapp-chart --namespace bankapp --values helm/bankapp-chart/values.yaml --wait --timeout 300s
-          kubectl apply -f helm/manifests/secretstore.yaml
-          kubectl apply -f helm/manifests/secrets/bankapp/externalsecret-mysql.yaml
+          helm upgrade --install bankapp helm/bankapp-chart \
+          --namespace bankapp \
+          --create-namespace \
+          --values helm/bankapp-chart/values.yaml \
+          --wait \
+          --timeout 300s
+  
+           kubectl apply -f helm/manifests/secretstore.yaml
+           kubectl apply -f helm/manifests/secrets/bankapp/externalsecret-mysql.yaml
       
 
       # ----------------------------
