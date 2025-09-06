@@ -67,15 +67,15 @@ jobs:
       # - name: Create external-secrets namespace
       #   run: |
       #     kubectl create namespace external-secrets || true
-      - name: Patch orphaned resources for Helm ownership
-        run: |
-          for sa in external-secrets-cert-controller external-secrets-webhook; do
-            kubectl annotate serviceaccount $sa \
-              -n external-secrets \
-              meta.helm.sh/release-name=external-secrets \
-              meta.helm.sh/release-namespace=external-secrets \
-              --overwrite || echo "ServiceAccount $sa not found or already patched"
-          done
+      # - name: Patch orphaned resources for Helm ownership
+      #   run: |
+      #     for sa in external-secrets-cert-controller external-secrets-webhook; do
+      #       kubectl annotate serviceaccount $sa \
+      #         -n external-secrets \
+      #         meta.helm.sh/release-name=external-secrets \
+      #         meta.helm.sh/release-namespace=external-secrets \
+      #         --overwrite || echo "ServiceAccount $sa not found or already patched"
+      #     done
           
       # - name: Patch orphaned ServiceAccount for Helm ownership
       #   run: |
@@ -94,8 +94,10 @@ jobs:
       - name: Add Helm repositories
         run: |
          helm repo add external-secrets https://charts.external-secrets.io
-         helm repo add argo https://argoproj.github.io/argo-helm
          helm repo update
+         helm repo add argo https://argoproj.github.io/argo-helm
+        
+         
 
       - name: Deploy External Secrets
         run: |
@@ -111,6 +113,9 @@ jobs:
           --namespace bankapp \
           --create-namespace \
           --values helm/bankapp-chart/values.yaml
+          kubectl apply -f helm/manifests/secretstore.yaml
+          kubectl apply -f helm/manifests/secrets/bankapp/externalsecret-mysql.yaml
+          
       # ----------------------------
       # ArgoCD + External Secrets
       # ----------------------------
